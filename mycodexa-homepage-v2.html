@@ -1,0 +1,1681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyCodexa — Clinical Whole Genome Sequencing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+/* ═══════════════════════════════════════════════════════
+   DESIGN TOKENS
+   Palette: warm off-white · charcoal · dusty mauve accent
+   Radius: generous rounded cards
+   Spacing: 8px base grid, generous section breathing room
+   Typography: DM Serif Display (headings) · Plus Jakarta Sans (body)
+═══════════════════════════════════════════════════════ */
+:root {
+  /* — Color — */
+  --c-bg:           #F9F7F4;       /* warm off-white page bg */
+  --c-surface:      #FFFFFF;       /* card / section surface */
+  --c-surface-alt:  #F4F1ED;       /* alternating section bg */
+  --c-surface-deep: #EDE9E3;       /* deeper warm panel */
+
+  --c-ink:          #2C2A27;       /* primary text — soft charcoal, not harsh black */
+  --c-ink-mid:      #4A4845;       /* secondary text */
+  --c-ink-muted:    #8A8580;       /* captions, labels */
+  --c-ink-ghost:    #B5B1AB;       /* decorative / disabled */
+
+  --c-accent:       #8C6D6D;       /* dusty mauve — primary accent */
+  --c-accent-light: #C9AEAE;       /* hover tint */
+  --c-accent-pale:  #F2ECEC;       /* accent background fills */
+
+  --c-sage:         #6B8277;       /* secondary accent — muted sage */
+  --c-sage-pale:    #EAF0ED;       /* sage background */
+
+  --c-border:       rgba(44,42,39,0.10);
+  --c-border-soft:  rgba(44,42,39,0.06);
+  --c-shadow:       rgba(44,42,39,0.06);
+
+  /* — Typography — */
+  --f-display: 'DM Serif Display', Georgia, serif;
+  --f-body:    'Plus Jakarta Sans', system-ui, sans-serif;
+
+  /* — Spacing — */
+  --sp-xs:  8px;
+  --sp-sm:  16px;
+  --sp-md:  24px;
+  --sp-lg:  40px;
+  --sp-xl:  64px;
+  --sp-2xl: 96px;
+  --sp-3xl: 128px;
+
+  /* — Radius — */
+  --r-sm:   8px;
+  --r-md:   16px;
+  --r-lg:   24px;
+  --r-xl:   32px;
+  --r-full: 9999px;
+
+  /* — Transitions — */
+  --ease: 0.25s ease;
+}
+
+/* ─── RESET & BASE ─── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 16px; }
+body {
+  font-family: var(--f-body);
+  background: var(--c-bg);
+  color: var(--c-ink);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+/* ─── LAYOUT UTILS ─── */
+.container      { max-width: 1100px; margin: 0 auto; padding: 0 var(--sp-lg); }
+.container-wide { max-width: 1280px; margin: 0 auto; padding: 0 var(--sp-lg); }
+.section        { padding: var(--sp-3xl) 0; }
+.section-md     { padding: var(--sp-2xl) 0; }
+.section-sm     { padding: var(--sp-xl) 0; }
+
+/* ─── EYEBROW LABEL ─── */
+.eyebrow {
+  display: inline-block;
+  font-family: var(--f-body);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--c-accent);
+  margin-bottom: var(--sp-md);
+}
+
+/* ─── SECTION HEADINGS ─── */
+.section-head { text-align: center; max-width: 640px; margin: 0 auto var(--sp-xl); }
+.section-head .eyebrow { display: block; }
+.section-head h2 {
+  font-family: var(--f-display);
+  font-size: clamp(34px, 4vw, 52px);
+  font-weight: 400;
+  line-height: 1.15;
+  color: var(--c-ink);
+  margin-bottom: var(--sp-sm);
+  letter-spacing: -0.01em;
+}
+.section-head h2 em { font-style: italic; color: var(--c-accent); }
+.section-head p {
+  font-size: 16px;
+  color: var(--c-ink-mid);
+  line-height: 1.75;
+  font-weight: 300;
+}
+
+/* ─── BUTTONS ─── */
+.btn {
+  display: inline-block;
+  font-family: var(--f-body);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  padding: 14px 32px;
+  border-radius: var(--r-full);
+  cursor: pointer;
+  border: none;
+  transition: all var(--ease);
+  white-space: nowrap;
+}
+.btn-primary {
+  background: var(--c-ink);
+  color: #fff;
+}
+.btn-primary:hover { background: var(--c-ink-mid); }
+
+.btn-accent {
+  background: var(--c-accent);
+  color: #fff;
+}
+.btn-accent:hover { background: var(--c-accent-light); }
+
+.btn-outline {
+  background: transparent;
+  color: var(--c-ink);
+  border: 1.5px solid var(--c-border);
+}
+.btn-outline:hover { border-color: var(--c-ink); background: var(--c-surface); }
+
+.btn-outline-light {
+  background: transparent;
+  color: rgba(255,255,255,0.85);
+  border: 1.5px solid rgba(255,255,255,0.3);
+}
+.btn-outline-light:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.6); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--c-accent);
+  border: 1.5px solid var(--c-accent-light);
+  padding: 12px 28px;
+}
+.btn-ghost:hover { background: var(--c-accent-pale); }
+
+/* ─── ═══════════════════════════════════════════════════
+   HEADER
+═══════════════════════════════════════════════════ ─── */
+header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(249,247,244,0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--c-border-soft);
+  transition: box-shadow var(--ease);
+}
+.header-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  height: 68px;
+  max-width: 1100px; margin: 0 auto; padding: 0 var(--sp-lg);
+}
+.logo {
+  font-family: var(--f-display);
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--c-ink);
+  text-decoration: none;
+  letter-spacing: -0.01em;
+}
+.logo span { color: var(--c-accent); }
+nav { display: flex; align-items: center; gap: 28px; }
+nav a {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--c-ink-mid);
+  text-decoration: none;
+  transition: color var(--ease);
+  letter-spacing: 0.01em;
+}
+nav a:hover { color: var(--c-ink); }
+.nav-cta {
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  color: #fff;
+  background: var(--c-ink);
+  padding: 9px 22px;
+  border-radius: var(--r-full);
+  transition: background var(--ease);
+}
+.nav-cta:hover { background: var(--c-accent); color: #fff; }
+
+/* ─── ═══════════════════════════════════════════════════
+   HERO
+═══════════════════════════════════════════════════ ─── */
+#hero {
+  min-height: 100vh;
+  background: var(--c-bg);
+  display: flex; flex-direction: column;
+  position: relative; overflow: hidden;
+}
+/* Soft organic shape in corner */
+.hero-shape {
+  position: absolute;
+  top: -120px; right: -80px;
+  width: 600px; height: 600px;
+  border-radius: 50%;
+  background: var(--c-accent-pale);
+  opacity: 0.7;
+  pointer-events: none;
+}
+.hero-shape-2 {
+  position: absolute;
+  bottom: 60px; left: -100px;
+  width: 360px; height: 360px;
+  border-radius: 50%;
+  background: var(--c-sage-pale);
+  opacity: 0.5;
+  pointer-events: none;
+}
+.hero-content {
+  position: relative; z-index: 2;
+  flex: 1; display: flex; align-items: center;
+  padding: 140px var(--sp-lg) var(--sp-xl);
+  max-width: 1100px; margin: 0 auto; width: 100%;
+}
+.hero-text { max-width: 700px; }
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-size: 12px; font-weight: 500; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--c-accent);
+  margin-bottom: var(--sp-lg);
+}
+.hero-eyebrow-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--c-accent); flex-shrink: 0;
+}
+h1.hero-headline {
+  font-family: var(--f-display);
+  font-size: clamp(52px, 7.5vw, 88px);
+  font-weight: 400;
+  line-height: 1.05;
+  color: var(--c-ink);
+  margin-bottom: var(--sp-lg);
+  letter-spacing: -0.02em;
+}
+h1.hero-headline em { font-style: italic; color: var(--c-accent); }
+.hero-sub {
+  font-size: 17px;
+  line-height: 1.75;
+  color: var(--c-ink-mid);
+  margin-bottom: var(--sp-sm);
+  max-width: 560px;
+  font-weight: 300;
+}
+.hero-support {
+  font-size: 13px;
+  color: var(--c-ink-muted);
+  margin-bottom: var(--sp-xl);
+  letter-spacing: 0.02em;
+}
+.hero-btns { display: flex; gap: 12px; flex-wrap: wrap; }
+/* Stat bar below hero text */
+.hero-stats {
+  position: relative; z-index: 2;
+  max-width: 1100px; margin: 0 auto; width: 100%;
+  padding: var(--sp-lg);
+  display: flex; gap: 0;
+  border-top: 1px solid var(--c-border);
+}
+.hero-stat {
+  flex: 1;
+  padding: var(--sp-sm) var(--sp-lg) var(--sp-sm) 0;
+  border-right: 1px solid var(--c-border);
+}
+.hero-stat:last-child { border-right: none; padding-left: var(--sp-lg); padding-right: 0; }
+.hero-stat-num {
+  font-family: var(--f-display);
+  font-size: 30px; font-weight: 400;
+  color: var(--c-ink); line-height: 1;
+  margin-bottom: 4px;
+}
+.hero-stat-label {
+  font-size: 12px; color: var(--c-ink-muted);
+  letter-spacing: 0.03em;
+}
+
+/* ─── ═══════════════════════════════════════════════════
+   TRUST STRIP
+═══════════════════════════════════════════════════ ─── */
+#trust-strip {
+  background: var(--c-surface);
+  border-top: 1px solid var(--c-border);
+  border-bottom: 1px solid var(--c-border);
+  padding: 20px 0;
+}
+.trust-strip-inner {
+  display: flex; align-items: center; justify-content: center;
+  gap: 40px; flex-wrap: wrap;
+}
+.trust-item {
+  display: flex; align-items: center; gap: 9px;
+  font-size: 12.5px; font-weight: 400; color: var(--c-ink-mid);
+  letter-spacing: 0.01em;
+}
+.trust-icon { width: 16px; height: 16px; flex-shrink: 0; color: var(--c-sage); }
+
+/* ─── ═══════════════════════════════════════════════════
+   PROOF / TRUST CARDS
+═══════════════════════════════════════════════════ ─── */
+#proof { background: var(--c-bg); }
+.proof-cards {
+  display: grid; grid-template-columns: repeat(3,1fr);
+  gap: var(--sp-sm); margin-top: var(--sp-xl);
+}
+.proof-card {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+  padding: var(--sp-xl) var(--sp-lg);
+  transition: box-shadow var(--ease), transform var(--ease);
+}
+.proof-card:hover {
+  box-shadow: 0 8px 32px var(--c-shadow);
+  transform: translateY(-2px);
+}
+.proof-num {
+  font-family: var(--f-display);
+  font-size: 52px; font-weight: 400;
+  color: var(--c-accent); line-height: 1;
+  margin-bottom: 12px;
+}
+.proof-label { font-size: 15px; font-weight: 500; color: var(--c-ink); margin-bottom: 8px; }
+.proof-sub { font-size: 13px; color: var(--c-ink-muted); line-height: 1.7; }
+
+/* ─── ═══════════════════════════════════════════════════
+   TESTIMONIALS
+═══════════════════════════════════════════════════ ─── */
+#testimonials { background: var(--c-surface-alt); overflow: hidden; }
+.testi-section-head {
+  text-align: center; padding-bottom: var(--sp-xl);
+}
+.testi-section-head .eyebrow { display: block; margin-bottom: var(--sp-sm); }
+.testi-section-head p {
+  font-family: var(--f-display);
+  font-size: 26px; font-weight: 400;
+  color: var(--c-ink); line-height: 1.35;
+  font-style: italic;
+}
+.testimonial-track {
+  display: flex; gap: var(--sp-sm);
+  animation: scroll-left 32s linear infinite;
+  width: max-content;
+}
+.testimonial-track:hover { animation-play-state: paused; }
+@keyframes scroll-left {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.testi-card {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+  padding: var(--sp-lg) var(--sp-xl);
+  width: 400px; flex-shrink: 0;
+}
+.testi-quote {
+  font-family: var(--f-display);
+  font-size: 18px; font-weight: 400; font-style: italic;
+  color: var(--c-ink); line-height: 1.65;
+  margin-bottom: var(--sp-md);
+}
+.testi-author { font-size: 12px; color: var(--c-ink-muted); font-weight: 500; letter-spacing: 0.04em; }
+.testi-stars { display: flex; gap: 3px; margin-bottom: var(--sp-sm); }
+.star { color: var(--c-accent); font-size: 12px; }
+
+/* ─── ═══════════════════════════════════════════════════
+   WHY MYCODEXA
+═══════════════════════════════════════════════════ ─── */
+#why { background: var(--c-surface); }
+.why-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: var(--sp-3xl); align-items: center;
+  margin-top: var(--sp-xl);
+}
+.why-text p {
+  font-size: 16px; line-height: 1.85;
+  color: var(--c-ink-mid); margin-bottom: var(--sp-sm);
+  font-weight: 300;
+}
+/* Soft visual placeholder */
+.why-visual {
+  background: var(--c-surface-alt);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-xl);
+  aspect-ratio: 1;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; position: relative;
+}
+.why-visual-inner {
+  text-align: center;
+}
+.why-visual-glyph {
+  font-family: var(--f-display);
+  font-size: 120px; font-weight: 400;
+  color: var(--c-accent-pale);
+  line-height: 1; user-select: none;
+  display: block;
+}
+.why-visual-label {
+  font-size: 12px; color: var(--c-ink-muted);
+  letter-spacing: 0.08em; text-transform: uppercase;
+  margin-top: var(--sp-sm);
+}
+.why-cols {
+  display: grid; grid-template-columns: repeat(3,1fr);
+  gap: var(--sp-sm); margin-top: var(--sp-lg);
+}
+.why-col {
+  background: var(--c-bg);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-md);
+  padding: var(--sp-lg) var(--sp-md);
+  transition: box-shadow var(--ease);
+}
+.why-col:hover { box-shadow: 0 4px 20px var(--c-shadow); }
+.why-col-num {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.1em;
+  color: var(--c-accent); margin-bottom: var(--sp-md);
+  display: block; text-transform: uppercase;
+}
+.why-col h4 {
+  font-family: var(--f-display);
+  font-size: 20px; font-weight: 400;
+  color: var(--c-ink); margin-bottom: 10px; line-height: 1.2;
+}
+.why-col p { font-size: 13.5px; color: var(--c-ink-muted); line-height: 1.75; }
+
+/* ─── ═══════════════════════════════════════════════════
+   WHAT YOU LEARN
+═══════════════════════════════════════════════════ ─── */
+#learn { background: var(--c-surface-alt); }
+.learn-grid {
+  display: grid; grid-template-columns: repeat(2,1fr);
+  gap: var(--sp-sm); margin-top: var(--sp-xl);
+}
+.learn-item {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+  padding: var(--sp-xl) var(--sp-lg);
+  position: relative; overflow: hidden;
+  transition: box-shadow var(--ease), transform var(--ease);
+}
+.learn-item:hover {
+  box-shadow: 0 8px 28px var(--c-shadow);
+  transform: translateY(-2px);
+}
+.learn-item-num {
+  font-family: var(--f-display);
+  font-size: 56px; font-weight: 400;
+  color: var(--c-accent-pale);
+  position: absolute; top: var(--sp-md); right: var(--sp-lg);
+  line-height: 1; pointer-events: none;
+}
+.learn-item-accent {
+  width: 28px; height: 2px;
+  background: var(--c-accent);
+  border-radius: 2px;
+  margin-bottom: var(--sp-md);
+}
+.learn-item h4 {
+  font-family: var(--f-display);
+  font-size: 24px; font-weight: 400;
+  color: var(--c-ink); margin-bottom: 12px;
+}
+.learn-item p { font-size: 14px; line-height: 1.8; color: var(--c-ink-mid); font-weight: 300; }
+.learn-cta { margin-top: var(--sp-xl); text-align: center; }
+
+/* ─── ═══════════════════════════════════════════════════
+   FAMILY PLANNING
+═══════════════════════════════════════════════════ ─── */
+#family { background: var(--c-surface); }
+.split-section {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: var(--sp-3xl); align-items: center;
+}
+.split-visual {
+  background: var(--c-sage-pale);
+  border: 1px solid rgba(107,130,119,0.15);
+  border-radius: var(--r-xl);
+  aspect-ratio: 4/5;
+  display: flex; align-items: flex-end; justify-content: flex-start;
+  position: relative; overflow: hidden; padding: var(--sp-lg);
+}
+.split-visual-bg {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--f-display);
+  font-size: 200px; color: rgba(107,130,119,0.07);
+  font-weight: 400; user-select: none; line-height: 1;
+}
+.split-visual-caption {
+  position: relative; z-index: 1;
+  background: var(--c-surface);
+  border-radius: var(--r-md);
+  padding: var(--sp-sm) var(--sp-md);
+  border: 1px solid var(--c-border);
+}
+.split-visual-caption-label {
+  font-size: 10px; font-weight: 500; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--c-sage);
+  margin-bottom: 4px;
+}
+.split-visual-caption-text {
+  font-family: var(--f-display);
+  font-size: 16px; color: var(--c-ink); font-weight: 400;
+}
+.split-text h3 {
+  font-family: var(--f-display);
+  font-size: clamp(32px, 3.5vw, 44px);
+  font-weight: 400; line-height: 1.15;
+  color: var(--c-ink); margin-bottom: var(--sp-md);
+}
+.split-text p {
+  font-size: 15px; line-height: 1.85;
+  color: var(--c-ink-mid); margin-bottom: var(--sp-md);
+  font-weight: 300;
+}
+
+/* ─── ═══════════════════════════════════════════════════
+   PGx — now light, not dark
+═══════════════════════════════════════════════════ ─── */
+#pgx { background: var(--c-surface-deep); }
+.pgx-inner {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: var(--sp-3xl); align-items: center;
+}
+.pgx-text h3 {
+  font-family: var(--f-display);
+  font-size: clamp(32px, 3.5vw, 44px);
+  font-weight: 400; color: var(--c-ink);
+  line-height: 1.15; margin-bottom: var(--sp-md);
+}
+.pgx-text p {
+  font-size: 15px; line-height: 1.85;
+  color: var(--c-ink-mid); margin-bottom: var(--sp-md);
+  font-weight: 300;
+}
+.pgx-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: var(--sp-lg); }
+.pill {
+  font-size: 12px; font-weight: 500;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  color: var(--c-ink-mid);
+  padding: 7px 16px;
+  border-radius: var(--r-full);
+  transition: border-color var(--ease);
+}
+.pill:hover { border-color: var(--c-accent-light); color: var(--c-accent); }
+/* PGx data panel */
+.pgx-visual {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+  padding: var(--sp-xl) var(--sp-lg);
+}
+.pgx-visual-title {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--c-ink-muted);
+  margin-bottom: var(--sp-lg);
+}
+.pgx-stat-row { display: flex; flex-direction: column; gap: var(--sp-md); }
+.pgx-stat { padding-bottom: var(--sp-md); border-bottom: 1px solid var(--c-border-soft); }
+.pgx-stat:last-child { border-bottom: none; padding-bottom: 0; }
+.pgx-stat-label {
+  font-size: 12.5px; color: var(--c-ink-mid);
+  display: flex; justify-content: space-between;
+  margin-bottom: 8px;
+}
+.pgx-stat-label span:last-child { color: var(--c-accent); font-weight: 500; }
+.pgx-stat-bar {
+  height: 4px;
+  background: var(--c-surface-deep);
+  border-radius: var(--r-full);
+  overflow: hidden;
+}
+.pgx-stat-fill {
+  height: 100%;
+  background: var(--c-accent);
+  border-radius: var(--r-full);
+  opacity: 0.7;
+}
+.pgx-visual-footnote {
+  font-size: 11px; color: var(--c-ink-ghost);
+  margin-top: var(--sp-md); line-height: 1.6;
+}
+
+/* ─── ═══════════════════════════════════════════════════
+   INHERITED RISK
+═══════════════════════════════════════════════════ ─── */
+#risk { background: var(--c-bg); }
+.risk-inner {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: var(--sp-3xl); align-items: center;
+}
+.risk-text h3 {
+  font-family: var(--f-display);
+  font-size: clamp(32px, 3.5vw, 44px);
+  font-weight: 400; line-height: 1.15;
+  color: var(--c-ink); margin-bottom: var(--sp-md);
+}
+.risk-text p {
+  font-size: 15px; line-height: 1.85;
+  color: var(--c-ink-mid); margin-bottom: var(--sp-lg);
+  font-weight: 300;
+}
+.risk-categories {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+}
+.risk-cat {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-sm);
+  padding: 13px 16px;
+  font-size: 13px; color: var(--c-ink-mid);
+  display: flex; align-items: center; gap: 9px;
+  transition: border-color var(--ease);
+}
+.risk-cat:hover { border-color: var(--c-accent-light); }
+.risk-cat-dot {
+  width: 6px; height: 6px;
+  background: var(--c-accent); border-radius: 50%; flex-shrink: 0;
+}
+.risk-note {
+  font-size: 12px; color: var(--c-ink-ghost);
+  margin-top: var(--sp-md); line-height: 1.65;
+}
+
+/* ─── ═══════════════════════════════════════════════════
+   HOW IT WORKS
+═══════════════════════════════════════════════════ ─── */
+#how { background: var(--c-surface); }
+.steps {
+  display: grid; grid-template-columns: repeat(4,1fr);
+  gap: var(--sp-sm); margin-top: var(--sp-xl);
+  position: relative;
+}
+.steps::before {
+  content: ''; position: absolute;
+  top: 28px; left: 3.5%; right: 3.5%;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--c-border), var(--c-accent-light), var(--c-border), transparent);
+}
+.step {
+  background: var(--c-bg);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+  padding: var(--sp-xl) var(--sp-md) var(--sp-lg);
+  text-align: center;
+  transition: box-shadow var(--ease);
+}
+.step:hover { box-shadow: 0 6px 24px var(--c-shadow); }
+.step-num {
+  width: 56px; height: 56px;
+  border: 1.5px solid var(--c-accent-light);
+  border-radius: 50%;
+  background: var(--c-surface);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--f-display);
+  font-size: 22px; font-weight: 400;
+  color: var(--c-accent);
+  margin: 0 auto var(--sp-md);
+  position: relative; z-index: 1;
+}
+.step h4 {
+  font-family: var(--f-display);
+  font-size: 19px; font-weight: 400;
+  color: var(--c-ink); margin-bottom: 8px;
+}
+.step p { font-size: 13px; color: var(--c-ink-muted); line-height: 1.7; }
+
+/* ─── ═══════════════════════════════════════════════════
+   PRICING
+═══════════════════════════════════════════════════ ─── */
+#pricing { background: var(--c-surface-alt); }
+.pricing-inner {
+  display: grid; grid-template-columns: 1fr 2fr;
+  gap: var(--sp-3xl); align-items: start;
+  margin-top: var(--sp-xl);
+}
+.pricing-card {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-xl);
+  overflow: hidden;
+  box-shadow: 0 4px 24px var(--c-shadow);
+}
+.pricing-card-top {
+  background: var(--c-ink);
+  padding: var(--sp-xl) var(--sp-lg);
+}
+.pricing-card-eyebrow {
+  font-size: 10px; font-weight: 500; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--c-accent-light);
+  margin-bottom: 10px;
+}
+.pricing-card-top h3 {
+  font-family: var(--f-display);
+  font-size: 24px; font-weight: 400;
+  color: #fff; margin-bottom: var(--sp-md);
+}
+.pricing-card-price {
+  font-family: var(--f-display);
+  font-size: 58px; font-weight: 400;
+  color: #fff; line-height: 1;
+  margin-bottom: 6px;
+}
+.pricing-card-price sup { font-size: 26px; vertical-align: super; opacity: 0.7; }
+.pricing-card-note { font-size: 12px; color: rgba(255,255,255,0.4); }
+.pricing-card-body { padding: var(--sp-lg); }
+.pricing-includes {
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--c-accent); margin-bottom: var(--sp-md);
+}
+.pricing-list { list-style: none; }
+.pricing-list li {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--c-border-soft);
+  font-size: 14px; color: var(--c-ink-mid);
+  display: flex; align-items: center; gap: 12px;
+}
+.pricing-list li::before {
+  content: '';
+  width: 16px; height: 16px; flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--c-accent-pale);
+  border: 1.5px solid var(--c-accent-light);
+}
+.pricing-card-cta { padding: 0 var(--sp-lg) var(--sp-lg); }
+.pricing-note-col h3 {
+  font-family: var(--f-display);
+  font-size: 34px; font-weight: 400;
+  line-height: 1.2; margin-bottom: var(--sp-md);
+  color: var(--c-ink);
+}
+.pricing-note-col > p {
+  font-size: 15px; color: var(--c-ink-mid);
+  line-height: 1.85; margin-bottom: var(--sp-md);
+  font-weight: 300;
+}
+.value-points {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: var(--sp-sm); margin-top: var(--sp-lg);
+}
+.value-point {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-md);
+  padding: var(--sp-md);
+}
+.value-point h5 { font-size: 14px; font-weight: 500; margin-bottom: 6px; color: var(--c-ink); }
+.value-point p { font-size: 12.5px; color: var(--c-ink-muted); line-height: 1.65; }
+
+/* ─── ═══════════════════════════════════════════════════
+   EXPERTS
+═══════════════════════════════════════════════════ ─── */
+#experts { background: var(--c-surface); }
+.expert-cards {
+  display: grid; grid-template-columns: repeat(3,1fr);
+  gap: var(--sp-sm); margin-top: var(--sp-xl);
+}
+.expert-card {
+  background: var(--c-bg);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+  padding: var(--sp-xl) var(--sp-lg);
+  text-align: center;
+  transition: box-shadow var(--ease), transform var(--ease);
+}
+.expert-card:hover {
+  box-shadow: 0 8px 28px var(--c-shadow);
+  transform: translateY(-2px);
+}
+.expert-avatar {
+  width: 72px; height: 72px;
+  background: var(--c-accent-pale);
+  border-radius: 50%;
+  margin: 0 auto var(--sp-md);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--f-display);
+  font-size: 22px; font-weight: 400;
+  color: var(--c-accent);
+  border: 1.5px solid var(--c-accent-light);
+}
+.expert-card h4 {
+  font-family: var(--f-display);
+  font-size: 20px; font-weight: 400;
+  color: var(--c-ink); margin-bottom: 8px;
+}
+.expert-card p { font-size: 13px; color: var(--c-ink-muted); line-height: 1.7; }
+.expert-cta { text-align: center; margin-top: var(--sp-xl); }
+
+/* ─── ═══════════════════════════════════════════════════
+   FAQ
+═══════════════════════════════════════════════════ ─── */
+#faq { background: var(--c-bg); }
+.faq-inner {
+  display: grid; grid-template-columns: 1fr 2fr;
+  gap: var(--sp-3xl); margin-top: var(--sp-xl);
+  align-items: start;
+}
+.faq-side { position: sticky; top: 88px; }
+.faq-side h3 {
+  font-family: var(--f-display);
+  font-size: 32px; font-weight: 400;
+  line-height: 1.2; margin-bottom: var(--sp-sm);
+  color: var(--c-ink);
+}
+.faq-side p {
+  font-size: 14px; color: var(--c-ink-muted);
+  line-height: 1.8; margin-bottom: var(--sp-lg);
+}
+.faq-list { }
+.faq-item {
+  border-bottom: 1px solid var(--c-border);
+  background: var(--c-surface);
+  border-radius: var(--r-sm);
+  margin-bottom: 4px;
+  overflow: hidden;
+}
+.faq-q {
+  width: 100%; background: none; border: none; cursor: pointer;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 20px var(--sp-md); text-align: left;
+  font-family: var(--f-body);
+  font-size: 15px; font-weight: 400;
+  color: var(--c-ink);
+  transition: color var(--ease);
+}
+.faq-q:hover { color: var(--c-accent); }
+.faq-icon {
+  width: 22px; height: 22px;
+  border: 1.5px solid var(--c-border);
+  border-radius: 50%;
+  flex-shrink: 0; margin-left: var(--sp-sm);
+  display: flex; align-items: center; justify-content: center;
+  transition: background var(--ease), border-color var(--ease);
+  position: relative;
+}
+.faq-icon::before, .faq-icon::after {
+  content: ''; position: absolute;
+  background: var(--c-accent);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+.faq-icon::before { width: 10px; height: 1.5px; }
+.faq-icon::after  { width: 1.5px; height: 10px; }
+.faq-item.open .faq-icon { background: var(--c-accent-pale); border-color: var(--c-accent-light); }
+.faq-item.open .faq-icon::after { transform: rotate(90deg); opacity: 0; }
+.faq-a {
+  font-size: 14px; line-height: 1.8; color: var(--c-ink-mid);
+  max-height: 0; overflow: hidden;
+  transition: max-height 0.4s ease, padding 0.3s ease;
+  padding: 0 var(--sp-md);
+}
+.faq-item.open .faq-a { max-height: 240px; padding: 0 var(--sp-md) 20px; }
+
+/* ─── ═══════════════════════════════════════════════════
+   FINAL CTA BAND
+═══════════════════════════════════════════════════ ─── */
+#final-cta {
+  background: var(--c-ink);
+  padding: var(--sp-3xl) 0;
+  text-align: center;
+}
+#final-cta .eyebrow { color: var(--c-accent-light); margin-bottom: var(--sp-md); }
+#final-cta h2 {
+  font-family: var(--f-display);
+  font-size: clamp(36px, 5.5vw, 64px);
+  font-weight: 400; color: #fff;
+  line-height: 1.1; margin-bottom: var(--sp-sm);
+  max-width: 680px; margin-left: auto; margin-right: auto;
+  letter-spacing: -0.01em;
+}
+#final-cta p {
+  font-size: 16px; color: rgba(255,255,255,0.5);
+  margin-bottom: var(--sp-xl);
+  font-weight: 300;
+  max-width: 460px; margin-left: auto; margin-right: auto;
+  line-height: 1.7;
+}
+.final-cta-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+/* ─── ═══════════════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════════════ ─── */
+footer {
+  background: var(--c-ink);
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding: var(--sp-xl) 0 var(--sp-lg);
+}
+.footer-inner {
+  display: grid; grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: var(--sp-xl); margin-bottom: var(--sp-xl);
+}
+.footer-logo {
+  font-family: var(--f-display);
+  font-size: 20px; font-weight: 400;
+  color: rgba(255,255,255,0.75); text-decoration: none;
+  display: block; margin-bottom: var(--sp-sm);
+}
+.footer-logo span { color: var(--c-accent-light); }
+.footer-brand p { font-size: 13px; color: rgba(255,255,255,0.3); line-height: 1.7; }
+.footer-col h5 {
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--c-accent-light); margin-bottom: var(--sp-sm);
+}
+.footer-col a {
+  display: block; font-size: 13px;
+  color: rgba(255,255,255,0.4); text-decoration: none;
+  margin-bottom: 10px; transition: color var(--ease);
+}
+.footer-col a:hover { color: rgba(255,255,255,0.8); }
+.footer-bottom {
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding-top: var(--sp-md);
+  display: flex; justify-content: space-between;
+  align-items: center; flex-wrap: wrap; gap: var(--sp-sm);
+}
+.footer-trust { font-size: 11.5px; color: rgba(255,255,255,0.22); }
+.footer-social { display: flex; gap: var(--sp-md); }
+.footer-social a {
+  font-size: 12px; color: rgba(255,255,255,0.3);
+  text-decoration: none; transition: color var(--ease);
+}
+.footer-social a:hover { color: var(--c-accent-light); }
+
+/* ─── FLOATING WHATSAPP ─── */
+.float-cta {
+  position: fixed; bottom: 24px; right: 24px; z-index: 200;
+}
+.whatsapp-btn {
+  width: 52px; height: 52px;
+  background: #25D366;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 20px rgba(37,211,102,0.3);
+  text-decoration: none;
+  transition: transform var(--ease);
+}
+.whatsapp-btn:hover { transform: scale(1.08); }
+
+/* ─── EXIT POPUP ─── */
+#exit-popup {
+  position: fixed; inset: 0; z-index: 300;
+  background: rgba(44,42,39,0.6);
+  display: none; align-items: center; justify-content: center;
+  backdrop-filter: blur(4px);
+}
+#exit-popup.show { display: flex; }
+.popup-box {
+  background: var(--c-surface);
+  border-radius: var(--r-xl);
+  max-width: 480px; width: 90%;
+  padding: var(--sp-xl) var(--sp-xl);
+  position: relative; text-align: center;
+  box-shadow: 0 24px 80px rgba(44,42,39,0.2);
+}
+.popup-close {
+  position: absolute; top: var(--sp-sm); right: var(--sp-sm);
+  width: 32px; height: 32px;
+  background: var(--c-bg); border: none; cursor: pointer;
+  font-size: 16px; color: var(--c-ink-muted);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: background var(--ease);
+}
+.popup-close:hover { background: var(--c-surface-deep); }
+.popup-box .eyebrow { display: block; text-align: center; }
+.popup-box h3 {
+  font-family: var(--f-display);
+  font-size: 30px; font-weight: 400;
+  color: var(--c-ink); margin-bottom: var(--sp-sm);
+}
+.popup-box > p {
+  font-size: 14px; color: var(--c-ink-muted);
+  margin-bottom: var(--sp-lg); line-height: 1.7;
+}
+.popup-input-row { display: flex; gap: 0; border-radius: var(--r-full); overflow: hidden; border: 1.5px solid var(--c-border); }
+.popup-input {
+  flex: 1; padding: 14px 18px;
+  border: none; outline: none;
+  font-family: var(--f-body); font-size: 14px;
+  background: var(--c-bg);
+}
+.popup-btn {
+  background: var(--c-accent);
+  color: #fff; border: none; cursor: pointer;
+  font-family: var(--f-body); font-size: 13px; font-weight: 500;
+  padding: 0 22px; transition: background var(--ease);
+  white-space: nowrap;
+}
+.popup-btn:hover { background: var(--c-ink); }
+.popup-legal { font-size: 11px; color: var(--c-ink-ghost); margin-top: var(--sp-sm); }
+
+/* ─── SCROLL FADE-IN ─── */
+.fade-in { opacity: 0; transform: translateY(16px); transition: opacity 0.65s ease, transform 0.65s ease; }
+.fade-in.visible { opacity: 1; transform: translateY(0); }
+
+/* ─── ═══════════════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════════════ ─── */
+@media (max-width: 960px) {
+  .header-inner nav { display: none; }
+  .why-grid, .split-section, .pgx-inner, .risk-inner,
+  .pricing-inner, .faq-inner { grid-template-columns: 1fr; gap: var(--sp-xl); }
+  .faq-side { position: static; }
+  .footer-inner { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 768px) {
+  .container { padding: 0 var(--sp-sm); }
+  .section { padding: var(--sp-xl) 0; }
+  .proof-cards, .why-cols, .learn-grid, .steps, .expert-cards { grid-template-columns: 1fr; }
+  h1.hero-headline { font-size: 48px; }
+  .hero-stats { flex-wrap: wrap; gap: var(--sp-sm); }
+  .hero-stat { flex: 1 1 40%; border-right: none; border-bottom: 1px solid var(--c-border); padding: var(--sp-sm); }
+  .hero-stat:last-child { border-bottom: none; }
+  .trust-strip-inner { gap: var(--sp-sm); }
+  .value-points, .risk-categories { grid-template-columns: 1fr; }
+  .footer-inner { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════ HEADER ═══════════════════════════════════ -->
+<header>
+  <div class="header-inner">
+    <a href="#" class="logo">My<span>Codexa</span></a>
+    <nav>
+      <a href="#why">Why MyCodexa</a>
+      <a href="#learn">What You Learn</a>
+      <a href="#family">Family Planning</a>
+      <a href="#pgx">Medication & PGx</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#experts">Experts</a>
+      <a href="#faq">FAQs</a>
+      <a href="#final-cta" class="nav-cta">Book Consultation</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════ HERO ═══════════════════════════════════ -->
+<section id="hero">
+  <div class="hero-shape"></div>
+  <div class="hero-shape-2"></div>
+
+  <div class="hero-content">
+    <div class="hero-text">
+      <p class="hero-eyebrow">
+        <span class="hero-eyebrow-dot"></span>
+        Clinical Whole Genome Sequencing
+      </p>
+      <h1 class="hero-headline">Your Genome.<br><em>Your Future.</em></h1>
+      <p class="hero-sub">Clinical-grade Whole Genome Sequencing designed to help you understand inherited risks, family planning insights, and how your body may respond to medications.</p>
+      <p class="hero-support">Home sample collection &nbsp;·&nbsp; Expert genetic counselling &nbsp;·&nbsp; Secure Indian laboratory</p>
+      <div class="hero-btns">
+        <a href="#final-cta" class="btn btn-primary">Book Consultation</a>
+        <a href="#learn" class="btn btn-outline">Explore What You Learn</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="hero-stat-num">30×</div>
+      <div class="hero-stat-label">Whole Genome Coverage</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">3B+</div>
+      <div class="hero-stat-label">Base Pairs Analysed</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">100%</div>
+      <div class="hero-stat-label">Expert Counselling Included</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">CAP</div>
+      <div class="hero-stat-label">Accredited Laboratory</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ TRUST STRIP ═══════════════════════════════════ -->
+<div id="trust-strip">
+  <div class="container">
+    <div class="trust-strip-inner">
+      <div class="trust-item">
+        <svg class="trust-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
+        CAP Accredited Laboratory
+      </div>
+      <div class="trust-item">
+        <svg class="trust-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        NABL Certified Standards
+      </div>
+      <div class="trust-item">
+        <svg class="trust-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        Expert Genetic Counselling Included
+      </div>
+      <div class="trust-item">
+        <svg class="trust-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Private &amp; Secure Data Handling
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ PROOF CARDS ═══════════════════════════════════ -->
+<section class="section" id="proof">
+  <div class="container">
+    <div class="section-head fade-in">
+      <span class="eyebrow">Why Trust Us</span>
+      <h2>Trusted Science.<br><em>Human Guidance.</em></h2>
+      <p>Built on clinical-grade technology and delivered with the expertise and care you deserve.</p>
+    </div>
+    <div class="proof-cards fade-in">
+      <div class="proof-card">
+        <div class="proof-num">30×</div>
+        <div class="proof-label">Whole Genome Sequencing</div>
+        <div class="proof-sub">Clinical-depth coverage across your entire genome — not just selected panels or ancestry markers.</div>
+      </div>
+      <div class="proof-card">
+        <div class="proof-num">100%</div>
+        <div class="proof-label">Expert Genetic Counsellors</div>
+        <div class="proof-sub">Every report is supported by certified genetic counsellors who guide you through what your results mean.</div>
+      </div>
+      <div class="proof-card">
+        <div class="proof-num">ISO</div>
+        <div class="proof-label">Secure Indian Clinical Laboratory</div>
+        <div class="proof-sub">Your samples are processed in India's most advanced molecular diagnostics facility, under strict accreditation.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ TESTIMONIALS ═══════════════════════════════════ -->
+<section id="testimonials" class="section-md">
+  <div class="container">
+    <div class="testi-section-head fade-in">
+      <span class="eyebrow">What people say</span>
+      <p>"The experience felt medically serious<br>and deeply personal — all at once."</p>
+    </div>
+  </div>
+  <div style="overflow: hidden;">
+    <div class="testimonial-track">
+      <div class="testi-card">
+        <div class="testi-stars"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div>
+        <p class="testi-quote">"The counselling experience was world class. We finally understood our family risks clearly."</p>
+        <p class="testi-author">A.M. — Founder, Bangalore</p>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div>
+        <p class="testi-quote">"This felt more premium and medically serious than any wellness test I had ever seen before."</p>
+        <p class="testi-author">R.S. — Senior Executive, Mumbai</p>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div>
+        <p class="testi-quote">"The pharmacogenomics insights were genuinely eye-opening. Changed how I approach my medications."</p>
+        <p class="testi-author">P.K. — 42, Hyderabad</p>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div>
+        <p class="testi-quote">"I never expected to feel so understood by a test. The counsellor took time to explain everything."</p>
+        <p class="testi-author">S.T. — 38, Delhi</p>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div>
+        <p class="testi-quote">"As a couple planning to start a family, carrier screening gave us clarity we didn't know we needed."</p>
+        <p class="testi-author">N. &amp; V.K. — Chennai</p>
+      </div>
+      <!-- Duplicate for seamless loop -->
+      <div class="testi-card">
+        <div class="testi-stars"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div>
+        <p class="testi-quote">"The counselling experience was world class. We finally understood our family risks clearly."</p>
+        <p class="testi-author">A.M. — Founder, Bangalore</p>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div>
+        <p class="testi-quote">"This felt more premium and medically serious than any wellness test I had ever seen before."</p>
+        <p class="testi-author">R.S. — Senior Executive, Mumbai</p>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div>
+        <p class="testi-quote">"The pharmacogenomics insights were genuinely eye-opening. Changed how I approach my medications."</p>
+        <p class="testi-author">P.K. — 42, Hyderabad</p>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div>
+        <p class="testi-quote">"I never expected to feel so understood by a test. The counsellor took time to explain everything."</p>
+        <p class="testi-author">S.T. — 38, Delhi</p>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div>
+        <p class="testi-quote">"As a couple planning to start a family, carrier screening gave us clarity we didn't know we needed."</p>
+        <p class="testi-author">N. &amp; V.K. — Chennai</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ WHY MYCODEXA ═══════════════════════════════════ -->
+<section class="section" id="why">
+  <div class="container">
+    <div class="section-head fade-in">
+      <span class="eyebrow">The Case for Knowing</span>
+      <h2>Why <em>MyCodexa</em></h2>
+      <p>Most health tests look at the present. MyCodexa helps you understand what may shape your future.</p>
+    </div>
+    <div class="why-grid fade-in">
+      <div class="why-text">
+        <p>Your genome carries lifelong information that can support better decisions around health, family planning, and treatment conversations with your doctors. Unlike routine blood tests or lifestyle panels, whole genome sequencing examines the complete blueprint your body was built from.</p>
+        <p>MyCodexa combines advanced sequencing technology with real clinical expertise to make those insights accessible — and meaningful.</p>
+        <a href="#learn" class="btn btn-outline" style="margin-top: 8px;">Learn More</a>
+      </div>
+      <div class="why-visual">
+        <div class="why-visual-inner">
+          <span class="why-visual-glyph">WGS</span>
+          <span class="why-visual-label">Whole Genome Sequencing</span>
+        </div>
+      </div>
+    </div>
+    <div class="why-cols fade-in">
+      <div class="why-col">
+        <span class="why-col-num">01</span>
+        <h4>Understand Hidden Risks</h4>
+        <p>Some health risks run silently through families for generations. Whole genome sequencing can surface inherited predispositions before they become clinical events.</p>
+      </div>
+      <div class="why-col">
+        <span class="why-col-num">02</span>
+        <h4>Make Better Life Decisions</h4>
+        <p>From family planning to medication response, your genome provides a foundation for decisions that extend well beyond a single consultation.</p>
+      </div>
+      <div class="why-col">
+        <span class="why-col-num">03</span>
+        <h4>One Test. Lifelong Value.</h4>
+        <p>Your DNA remains the same throughout your life. As genomic science advances, new insights can be derived from the same data — no repeat testing required.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ WHAT YOU LEARN ═══════════════════════════════════ -->
+<section class="section" id="learn">
+  <div class="container">
+    <div class="section-head fade-in" style="text-align:left; max-width:none; margin-bottom: var(--sp-xl);">
+      <span class="eyebrow">Your Report</span>
+      <h2 style="text-align:left;">What You <em>Learn</em></h2>
+      <p style="text-align:left; max-width: 560px;">Your report focuses on clinically meaningful insights that may support real-world decisions — not lifestyle scores or ancestry percentages.</p>
+    </div>
+    <div class="learn-grid fade-in">
+      <div class="learn-item">
+        <div class="learn-item-num">01</div>
+        <div class="learn-item-accent"></div>
+        <h4>Inherited Risk</h4>
+        <p>Understand predispositions linked to select cardiovascular, metabolic, neurological, and other inherited conditions. Information that supports proactive planning with your healthcare team.</p>
+      </div>
+      <div class="learn-item">
+        <div class="learn-item-num">02</div>
+        <div class="learn-item-accent"></div>
+        <h4>Carrier Status</h4>
+        <p>Helpful for couples planning a family. Detect shared carrier risks for recessive conditions, enabling informed decisions before conception.</p>
+      </div>
+      <div class="learn-item">
+        <div class="learn-item-num">03</div>
+        <div class="learn-item-accent"></div>
+        <h4>Medication Response</h4>
+        <p>Learn how your genetics may influence how your body processes certain commonly prescribed medicines — from antidepressants to cardiac drugs.</p>
+      </div>
+      <div class="learn-item">
+        <div class="learn-item-num">04</div>
+        <div class="learn-item-accent"></div>
+        <h4>Family Health Intelligence</h4>
+        <p>Insights that may also be relevant to your relatives and future generations. A single test can carry meaning well beyond the individual.</p>
+      </div>
+    </div>
+    <div class="learn-cta fade-in">
+      <a href="#" class="btn btn-ghost">See Sample Report</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ FAMILY PLANNING ═══════════════════════════════════ -->
+<section class="section" id="family">
+  <div class="container">
+    <div class="split-section fade-in">
+      <div class="split-visual">
+        <div class="split-visual-bg">♡</div>
+        <div class="split-visual-caption">
+          <div class="split-visual-caption-label">Carrier Screening</div>
+          <div class="split-visual-caption-text">Insights for the family<br>you plan to build</div>
+        </div>
+      </div>
+      <div class="split-text">
+        <span class="eyebrow">Family Planning</span>
+        <h3>For Couples Planning<br>Their Future</h3>
+        <p>Many healthy couples unknowingly carry genetic variants associated with recessive conditions. Individually, these variants cause no symptoms. Together, they may affect a future child.</p>
+        <p>MyCodexa's carrier screening is designed to identify these shared risks before conception — so you can plan with your doctor from a position of knowledge, not uncertainty.</p>
+        <a href="#" class="btn btn-outline">Explore Family Planning</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ PGx ═══════════════════════════════════ -->
+<section class="section" id="pgx">
+  <div class="container">
+    <div class="pgx-inner fade-in">
+      <div class="pgx-text">
+        <span class="eyebrow">Pharmacogenomics</span>
+        <h3>Your Genes<br>&amp; Your Medicines</h3>
+        <p>People respond very differently to the same medications. Pharmacogenomics examines how your genetic variants may influence how your body metabolises and responds to drugs — information that may inform safer, smarter prescribing conversations with your doctor.</p>
+        <div class="pgx-pills">
+          <span class="pill">Statins</span>
+          <span class="pill">Antidepressants</span>
+          <span class="pill">Cardiac Drugs</span>
+          <span class="pill">Pain Medicines</span>
+          <span class="pill">Blood Thinners</span>
+          <span class="pill">Oncology Agents</span>
+        </div>
+        <a href="#" class="btn btn-outline">Learn About PGx</a>
+      </div>
+      <div class="pgx-visual">
+        <div class="pgx-visual-title">Drug metabolism profile — illustrative</div>
+        <div class="pgx-stat-row">
+          <div class="pgx-stat">
+            <div class="pgx-stat-label"><span>Statin Metabolism</span><span>Poor Metaboliser</span></div>
+            <div class="pgx-stat-bar"><div class="pgx-stat-fill" style="width: 20%"></div></div>
+          </div>
+          <div class="pgx-stat">
+            <div class="pgx-stat-label"><span>Antidepressant Response</span><span>Normal</span></div>
+            <div class="pgx-stat-bar"><div class="pgx-stat-fill" style="width: 75%"></div></div>
+          </div>
+          <div class="pgx-stat">
+            <div class="pgx-stat-label"><span>Warfarin Sensitivity</span><span>Elevated</span></div>
+            <div class="pgx-stat-bar"><div class="pgx-stat-fill" style="width: 85%"></div></div>
+          </div>
+          <div class="pgx-stat">
+            <div class="pgx-stat-label"><span>Codeine Processing</span><span>Rapid Metaboliser</span></div>
+            <div class="pgx-stat-bar"><div class="pgx-stat-fill" style="width: 92%"></div></div>
+          </div>
+        </div>
+        <p class="pgx-visual-footnote">Illustrative only. All results interpreted by certified clinical experts.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ INHERITED RISK ═══════════════════════════════════ -->
+<section class="section" id="risk">
+  <div class="container">
+    <div class="risk-inner fade-in">
+      <div class="risk-text">
+        <span class="eyebrow">Inherited Risk</span>
+        <h3>Healthy Today Doesn't Always Mean Risk-Free</h3>
+        <p>Some inherited risks remain clinically silent for years or decades. Early genomic awareness may support earlier surveillance, lifestyle planning, or proactive conversations with specialists — before symptoms arise.</p>
+        <a href="#" class="btn btn-outline">Understand Inherited Risk</a>
+      </div>
+      <div>
+        <div style="font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--c-ink-muted); margin-bottom: var(--sp-md);">Conditions examined — select categories</div>
+        <div class="risk-categories">
+          <div class="risk-cat"><span class="risk-cat-dot"></span>Cardiovascular</div>
+          <div class="risk-cat"><span class="risk-cat-dot"></span>Oncology Risk Genes</div>
+          <div class="risk-cat"><span class="risk-cat-dot"></span>Metabolic Disorders</div>
+          <div class="risk-cat"><span class="risk-cat-dot"></span>Neurological</div>
+          <div class="risk-cat"><span class="risk-cat-dot"></span>Haematological</div>
+          <div class="risk-cat"><span class="risk-cat-dot"></span>Connective Tissue</div>
+          <div class="risk-cat"><span class="risk-cat-dot"></span>Renal Conditions</div>
+          <div class="risk-cat"><span class="risk-cat-dot"></span>Endocrine Disorders</div>
+        </div>
+        <p class="risk-note">All findings are reviewed against clinical databases and interpreted by our genetics team. Positive findings are discussed personally with you.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ HOW IT WORKS ═══════════════════════════════════ -->
+<section class="section" id="how">
+  <div class="container">
+    <div class="section-head fade-in">
+      <span class="eyebrow">The Process</span>
+      <h2>How It <em>Works</em></h2>
+      <p>A seamless experience designed around your schedule — from first conversation to final report.</p>
+    </div>
+    <div class="steps fade-in">
+      <div class="step">
+        <div class="step-num">01</div>
+        <h4>Book Consultation</h4>
+        <p>Speak with our team to understand whether MyCodexa is right for you. No commitment required.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <h4>Home Sample Collection</h4>
+        <p>A trained phlebotomist visits your home for a simple blood draw. Convenient, private, and at a time that suits you.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <h4>Sequencing &amp; Analysis</h4>
+        <p>Your sample is processed in our accredited laboratory using advanced 30× whole genome sequencing technology.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <h4>Report + Counselling</h4>
+        <p>Receive your personalised clinical report and discuss your results in a one-on-one session with a certified genetic counsellor.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ PRICING ═══════════════════════════════════ -->
+<section class="section" id="pricing">
+  <div class="container">
+    <div class="section-head fade-in">
+      <span class="eyebrow">Investment</span>
+      <h2>Transparent<br><em>Premium Pricing</em></h2>
+    </div>
+    <div class="pricing-inner fade-in">
+      <div class="pricing-card">
+        <div class="pricing-card-top">
+          <p class="pricing-card-eyebrow">Complete Package</p>
+          <h3>Whole Genome Sequencing</h3>
+          <div class="pricing-card-price"><sup>₹</sup>25,000</div>
+          <p class="pricing-card-note">One-time &nbsp;·&nbsp; Everything included</p>
+        </div>
+        <div class="pricing-card-body">
+          <p class="pricing-includes">What's included</p>
+          <ul class="pricing-list">
+            <li>Pre-test guidance &amp; consultation</li>
+            <li>Home blood sample collection</li>
+            <li>30× Whole Genome Sequencing</li>
+            <li>Clinical genomics report</li>
+            <li>Post-test counselling session</li>
+            <li>Secure data storage &amp; access</li>
+          </ul>
+        </div>
+        <div class="pricing-card-cta">
+          <a href="#final-cta" class="btn btn-accent" style="width:100%; text-align:center; display:block;">Start Now</a>
+        </div>
+      </div>
+      <div class="pricing-note-col">
+        <h3>Why whole genome sequencing is worth the investment</h3>
+        <p>Unlike panel tests that look at a narrow set of variants, whole genome sequencing captures your entire genetic blueprint — over 3 billion base pairs. This means insights available today, and a dataset that can yield new answers as science advances.</p>
+        <p>The ₹25,000 price is a single investment for lifelong genetic intelligence. There are no subscription fees, no hidden costs, and no requirement to ever re-sequence.</p>
+        <div class="value-points">
+          <div class="value-point">
+            <h5>30× Coverage</h5>
+            <p>Each base pair read 30 times for clinical accuracy</p>
+          </div>
+          <div class="value-point">
+            <h5>No Subscription</h5>
+            <p>One payment. Lifelong access to your data</p>
+          </div>
+          <div class="value-point">
+            <h5>Expert Review</h5>
+            <p>Human clinical review — not automated flags</p>
+          </div>
+          <div class="value-point">
+            <h5>Future-Proof</h5>
+            <p>New insights from the same dataset as science evolves</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ EXPERTS ═══════════════════════════════════ -->
+<section class="section" id="experts">
+  <div class="container">
+    <div class="section-head fade-in">
+      <span class="eyebrow">Your Team</span>
+      <h2>You Will Never<br><em>Navigate This Alone</em></h2>
+      <p>Every MyCodexa journey is accompanied by clinical experts trained to help you understand what your results mean — and what to do next.</p>
+    </div>
+    <div class="expert-cards fade-in">
+      <div class="expert-card">
+        <div class="expert-avatar">GC</div>
+        <h4>Certified Genetic Counsellors</h4>
+        <p>Board-certified genetic counsellors guide every client through their pre- and post-test sessions, ensuring you leave with clarity and a path forward.</p>
+      </div>
+      <div class="expert-card">
+        <div class="expert-avatar">CG</div>
+        <h4>Clinical Genomics Team</h4>
+        <p>Our clinical team reviews every report, contextualising findings against international databases and the latest published evidence.</p>
+      </div>
+      <div class="expert-card">
+        <div class="expert-avatar">SS</div>
+        <h4>Support Specialists</h4>
+        <p>Dedicated support staff are available throughout your journey — from scheduling your home collection to following up after your results session.</p>
+      </div>
+    </div>
+    <div class="expert-cta fade-in">
+      <a href="#final-cta" class="btn btn-primary">Book Expert Consultation</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ FAQ ═══════════════════════════════════ -->
+<section class="section" id="faq">
+  <div class="container">
+    <div class="faq-inner fade-in">
+      <div class="faq-side">
+        <span class="eyebrow">Questions</span>
+        <h3>Everything you need to know</h3>
+        <p>If your question isn't answered here, our team is available to speak with you before you make any decisions.</p>
+        <a href="#final-cta" class="btn btn-outline">Speak to Our Team</a>
+      </div>
+      <div class="faq-list">
+        <div class="faq-item open">
+          <button class="faq-q">Is this a lifestyle DNA test?<span class="faq-icon"></span></button>
+          <div class="faq-a">No. MyCodexa is not a wellness or ancestry product. It focuses exclusively on clinically relevant genetic insights — inherited risk, carrier status, and medication response — reviewed and interpreted by certified clinical professionals.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q">Is my data private and secure?<span class="faq-icon"></span></button>
+          <div class="faq-a">Your genomic data is handled under strict privacy and security protocols within India. We do not sell or share your data with third parties. You retain full control of your information at all times.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q">Do I need a doctor's referral?<span class="faq-icon"></span></button>
+          <div class="faq-a">No referral is required. Our team will guide you through a pre-test consultation to determine whether MyCodexa is appropriate for your situation and answer any clinical questions you may have.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q">How long does the process take?<span class="faq-icon"></span></button>
+          <div class="faq-a">Typical turnaround from sample collection to report delivery is communicated during your onboarding consultation. Whole genome sequencing is a thorough clinical process — we do not cut corners for speed.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q">Is genetic counselling included?<span class="faq-icon"></span></button>
+          <div class="faq-a">Yes. Expert genetic counselling is a core part of the MyCodexa experience — not an optional add-on. Both pre-test guidance and a post-result counselling session are included in the price.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q">What is Whole Genome Sequencing vs a gene panel?<span class="faq-icon"></span></button>
+          <div class="faq-a">A gene panel examines a narrow set of pre-selected genes. Whole Genome Sequencing analyses your complete DNA — over 3 billion base pairs. This gives a far more complete picture and allows for reanalysis as scientific knowledge evolves, without the need for repeat testing.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ FINAL CTA ═══════════════════════════════════ -->
+<section id="final-cta">
+  <div class="container">
+    <span class="eyebrow">Take the First Step</span>
+    <h2>The Most Advanced Health Test<br>You May Ever Take.</h2>
+    <p>Understand more. Plan smarter. Move forward with clarity.</p>
+    <div class="final-cta-btns">
+      <a href="#" class="btn btn-accent">Book Consultation</a>
+      <a href="#" class="btn btn-outline-light">Speak to an Expert</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ FOOTER ═══════════════════════════════════ -->
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <a href="#" class="footer-logo">My<span>Codexa</span></a>
+        <p>Clinical genomics for the future.<br>Powered by Karkinos Healthcare.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Company</h5>
+        <a href="#">About MyCodexa</a>
+        <a href="#">Our Technology</a>
+        <a href="#">Karkinos Healthcare</a>
+        <a href="#">Careers</a>
+      </div>
+      <div class="footer-col">
+        <h5>Legal</h5>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+        <a href="#">Data Handling</a>
+        <a href="#">Accreditations</a>
+      </div>
+      <div class="footer-col">
+        <h5>Connect</h5>
+        <a href="#">Contact Us</a>
+        <a href="#">WhatsApp</a>
+        <a href="#">LinkedIn</a>
+        <a href="#">Instagram</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p class="footer-trust">MyCodexa by Karkinos Healthcare &nbsp;·&nbsp; Clinical Genomics for the Future &nbsp;·&nbsp; CAP Accredited &nbsp;·&nbsp; NABL Certified</p>
+      <div class="footer-social">
+        <a href="#">LinkedIn</a>
+        <a href="#">Instagram</a>
+        <a href="#">WhatsApp</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ═══════════════════════════════════ FLOATING WHATSAPP ═══════════════════════════════════ -->
+<div class="float-cta">
+  <a href="https://wa.me/91XXXXXXXXXX" class="whatsapp-btn" title="Chat on WhatsApp">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+  </a>
+</div>
+
+<!-- ═══════════════════════════════════ EXIT POPUP ═══════════════════════════════════ -->
+<div id="exit-popup">
+  <div class="popup-box">
+    <button class="popup-close" onclick="document.getElementById('exit-popup').classList.remove('show')">✕</button>
+    <span class="eyebrow">Free Resource</span>
+    <h3>Still Exploring?</h3>
+    <p>Get our free guide: <em>5 Reasons to Understand Your Genome</em> — written by our clinical team for anyone considering whole genome sequencing for the first time.</p>
+    <div class="popup-input-row">
+      <input class="popup-input" type="email" placeholder="Your email address">
+      <button class="popup-btn">Send the Guide</button>
+    </div>
+    <p class="popup-legal">No spam. Unsubscribe anytime.</p>
+  </div>
+</div>
+
+<script>
+  // FAQ accordion
+  document.querySelectorAll('.faq-q').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item');
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+
+  // Scroll fade-in
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+  document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
+
+  // Exit intent popup
+  let popupShown = false;
+  document.addEventListener('mouseleave', e => {
+    if (e.clientY < 10 && !popupShown) {
+      popupShown = true;
+      document.getElementById('exit-popup').classList.add('show');
+    }
+  });
+  document.getElementById('exit-popup').addEventListener('click', e => {
+    if (e.target === document.getElementById('exit-popup'))
+      document.getElementById('exit-popup').classList.remove('show');
+  });
+
+  // Header scroll shadow
+  window.addEventListener('scroll', () => {
+    document.querySelector('header').style.boxShadow =
+      window.scrollY > 20 ? '0 1px 20px rgba(44,42,39,0.08)' : 'none';
+  }, { passive: true });
+</script>
+</body>
+</html>
